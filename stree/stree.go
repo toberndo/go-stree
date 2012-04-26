@@ -21,7 +21,7 @@ type Tree interface {
 	Clear()
 	// Build segment tree out of interval stack
 	BuildTree()
-	// Print tree recursively to sdout
+	// Print tree recursively to stdout
 	Print()
 	// Transform tree to array
 	Tree2Array() []SegmentOverlap
