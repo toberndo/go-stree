@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package implements a segment tree
+// Package implements a segment tree and serial algorithm to query intervals
 package stree
 
 import (
@@ -84,8 +84,7 @@ func (n *node) Overlap() []Interval {
 }
 
 type Interval struct {
-	// Unique
-	Id int
+	Id int // unique
 	Segment
 }
 
@@ -110,6 +109,7 @@ const (
 	INTERSECT_OR_SUPERSET
 )
 
+// NewTree returns a Tree interface with underlying segment tree implementation
 func NewTree() Tree {
 	t := new(stree)
 	t.Clear()
@@ -206,6 +206,7 @@ func (t *stree) insertNodes(endpoint []int) *node {
 	return n
 }
 
+// CompareTo compares two Segments and returns: DISJOINT, SUBSET or INTERSECT_OR_SUPERSET
 func (s *Segment) CompareTo(other *Segment) int {
 	if other.From > s.To || other.To < s.From {
 		return DISJOINT
@@ -216,6 +217,7 @@ func (s *Segment) CompareTo(other *Segment) int {
 	return INTERSECT_OR_SUPERSET
 }
 
+// Disjoint returns true if Segment does not overlap with interval
 func (s *Segment) Disjoint(from, to int) bool {
 	if from > s.To || to < s.From {
 		return true

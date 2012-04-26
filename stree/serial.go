@@ -10,6 +10,7 @@ type serial struct {
 	stree
 }
 
+// NewTree returns a Tree interface with underlying serial algorithm
 func NewSerial() Tree {
 	t := new(serial)
 	t.Clear()

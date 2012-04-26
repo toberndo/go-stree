@@ -75,6 +75,7 @@ func (n *mnode) Overlap() []Interval {
 	return interval
 }
 
+// NewTree returns a Tree interface with underlying parallel segment tree implementation
 func NewMTree() Tree {
 	t := new(mtree)
 	t.Clear()
