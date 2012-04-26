@@ -108,6 +108,6 @@ Use of this source code is governed by a BSD-style license that can be found in 
 
 ## About
 
-written by Thomas Oberndörfer <toberndo@yarkon.de>
+written by Thomas Oberndörfer <toberndo@yarkon.de>  
 Blog: http://www.chasinclouds.com/  
 follow me on [Twitter](https://twitter.com/#!/toberndo)  
