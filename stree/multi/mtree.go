@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	// number of go routines = 2 ** P_LEVEL
+	// number of goroutines = 2 ** P_LEVEL
 	P_LEVEL = 6 // 64 goroutines
 )
 

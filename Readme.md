@@ -101,6 +101,7 @@ To test performance execute the following command in directories **stree** and *
     go test -test.bench "." -test.cpu 4
 
 As a short summary: the performance depends highly on the quality of the test data. Parallelism does not always improve performance, in some scenarios the stree algorithm is faster. In the optimal case mtree version with parallel support performs 20% better on a dual core machine than single threaded stree version.
+A detailed analysis can be found in this article: http://www.chasinclouds.com/2012/05/building-segment-trees-with-go.html
 
 ## Licence
 
