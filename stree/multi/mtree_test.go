@@ -89,6 +89,51 @@ func TestMinimalTree(t *testing.T) {
 	}
 }
 
+func TestMinimalTree2(t *testing.T) {
+	tree := NewTree()
+	tree.Push(1, 1)
+	tree.BuildTree()
+	if result := tree.Query(1, 1); len(result) != 1 {
+		t.Errorf("fail query minimal tree for (1, 1)")
+	}
+	if result := tree.Query(1, 2); len(result) != 1 {
+		t.Errorf("fail query minimal tree for (1, 2)")
+	}
+	if result := tree.Query(2, 3); len(result) != 0 {
+		t.Errorf("fail query minimal tree for (2, 3)")
+	}
+}
+
+func TestNormalTree(t *testing.T) {
+	tree := NewTree()
+	tree.Push(1, 1)
+	tree.Push(2, 3)
+	tree.Push(5, 7)
+	tree.Push(4, 6)
+	tree.Push(6, 9)
+	tree.BuildTree()
+	if result := tree.Query(3, 5); len(result) != 3 {
+		t.Errorf("fail query multiple tree for (3, 5)")
+	}
+	qvalid := map[int]int{
+		0: 0,
+		1: 1,
+		2: 1,
+		3: 1,
+		4: 1,
+		5: 2,
+		6: 3,
+		7: 2,
+		8: 1,
+		9: 1,
+	}
+	for i := 0; i <= 9; i++ {
+		if result := tree.Query(i, i); len(result) != qvalid[i] {
+			t.Errorf("fail query multiple tree for (%d, %d)", i, i)
+		}
+	}
+}
+
 func BenchmarkSimple(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		tree := NewMTree()

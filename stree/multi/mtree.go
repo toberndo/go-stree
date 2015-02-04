@@ -160,10 +160,14 @@ func (t *mtree) Tree2Array() []SegmentOverlap {
 func (t *mtree) insertNodes(endpoint []int, level int) *mnode {
 	var n *mnode
 	//fmt.Printf("Level: %d\n", level)
-	if len(endpoint) == 2 {
+	if len(endpoint) == 1 {
+		n = &mnode{segment: Segment{endpoint[0], endpoint[0]}}
+		n.left = nil
+		n.right = nil
+	} else if len(endpoint) == 2 {
 		n = &mnode{segment: Segment{endpoint[0], endpoint[1]}}
 		if endpoint[1] != t.max {
-			n.left = &mnode{segment: Segment{endpoint[0], endpoint[1]}}
+			n.left = &mnode{segment: Segment{endpoint[0], endpoint[0]}}
 			n.right = &mnode{segment: Segment{endpoint[1], endpoint[1]}}
 		}
 	} else {
@@ -172,10 +176,10 @@ func (t *mtree) insertNodes(endpoint []int, level int) *mnode {
 		level++
 		if level == P_LEVEL && !t.single {
 			t.insertNodesAsync(&n.left, endpoint[:center+1], level)
-			t.insertNodesAsync(&n.right, endpoint[center:], level)
+			t.insertNodesAsync(&n.right, endpoint[center+1:], level)
 		} else {
 			n.left = t.insertNodes(endpoint[:center+1], level)
-			n.right = t.insertNodes(endpoint[center:], level)
+			n.right = t.insertNodes(endpoint[center+1:], level)
 		}
 	}
 	return n
