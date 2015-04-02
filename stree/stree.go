@@ -195,17 +195,11 @@ func (t *stree) insertNodes(endpoint []int) *node {
 		n = &node{segment: Segment{endpoint[0], endpoint[0]}}
 		n.left = nil
 		n.right = nil
-	} else if len(endpoint) == 2 {
-		n = &node{segment: Segment{endpoint[0], endpoint[1]}}
-		if endpoint[1] != t.max {
-			n.left = &node{segment: Segment{endpoint[0], endpoint[0]}}
-			n.right = &node{segment: Segment{endpoint[1], endpoint[1]}}
-		}
 	} else {
 		n = &node{segment: Segment{endpoint[0], endpoint[len(endpoint)-1]}}
 		center := len(endpoint) / 2
-		n.left = t.insertNodes(endpoint[:center+1])
-		n.right = t.insertNodes(endpoint[center+1:])
+		n.left = t.insertNodes(endpoint[:center])
+		n.right = t.insertNodes(endpoint[center:])
 	}
 	return n
 }
