@@ -143,10 +143,10 @@ func (t *stree) BuildTree() {
 	if len(t.base) == 0 {
 		panic("No intervals in stack to build tree. Push intervals first")
 	}
-	var endpoint []int
-	endpoint, t.min, t.max = Endpoints(t.base)
+	var endpoints []int
+	endpoints, t.min, t.max = Endpoints(t.base)
 	// Create tree nodes from interval endpoints
-	t.root = t.insertNodes(endpoint)
+	t.root = t.insertNodes(elementaryIntervals(endpoints))
 	for i := range t.base {
 		insertInterval(t.root, &t.base[i])
 	}
@@ -188,19 +188,39 @@ func Dedup(sl []int) []int {
 	return unique
 }
 
-// insertNodes builds tree structure from given endpoints
-func (t *stree) insertNodes(endpoint []int) *node {
+// elementaryIntervals creates a slice of elementary intervals
+// from a sorted slice of endpoints
+// Input: [p1, p2, ..., pn]
+// Output: [{p1 : p2}, {p2 : p2},... , {pn : pn}]
+func elementaryIntervals(endpoints []int) []Segment {
+	if len(endpoints) == 1 {
+		return []Segment{Segment{endpoints[0], endpoints[0]}}
+	}
+
+	intervals := make([]Segment, len(endpoints)*2-1)
+	for i := 0; i < len(endpoints); i++ {
+		intervals[i*2] = Segment{endpoints[i], endpoints[i]}
+		if i < len(endpoints)-1 { // don't store {pn, pn+1}
+			intervals[i*2+1] = Segment{endpoints[i], endpoints[i+1]}
+		}
+	}
+	return intervals
+}
+
+// insertNodes builds the tree structure from the elementary intervals
+func (t *stree) insertNodes(leaves []Segment) *node {
 	var n *node
-	if len(endpoint) == 1 {
-		n = &node{segment: Segment{endpoint[0], endpoint[0]}}
+	if len(leaves) == 1 {
+		n = &node{segment: leaves[0]}
 		n.left = nil
 		n.right = nil
 	} else {
-		n = &node{segment: Segment{endpoint[0], endpoint[len(endpoint)-1]}}
-		center := len(endpoint) / 2
-		n.left = t.insertNodes(endpoint[:center])
-		n.right = t.insertNodes(endpoint[center:])
+		n = &node{segment: Segment{leaves[0].From, leaves[len(leaves)-1].To}}
+		center := len(leaves) / 2
+		n.left = t.insertNodes(leaves[:center])
+		n.right = t.insertNodes(leaves[center:])
 	}
+
 	return n
 }
 
