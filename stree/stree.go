@@ -184,7 +184,7 @@ func Dedup(sl []int) []int {
 // elementaryIntervals creates a slice of elementary intervals
 // from a sorted slice of endpoints
 // Input: [p1, p2, ..., pn]
-// Output: [{p1 : p2}, {p2 : p2},... , {pn : pn}]
+// Output: [{p1 : p1}, {p1 : p2}, {p2 : p2},... , {pn : pn}]
 func elementaryIntervals(endpoints []int) []Segment {
 	if len(endpoints) == 1 {
 		return []Segment{Segment{endpoints[0], endpoints[0]}}
