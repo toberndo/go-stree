@@ -102,13 +102,6 @@ type SegmentOverlap struct {
 // Node receiver for tree traversal
 type NodeReceive func(Node)
 
-const (
-	// Relations of two intervals
-	SUBSET = iota
-	DISJOINT
-	INTERSECT_OR_SUPERSET
-)
-
 // NewTree returns a Tree interface with underlying segment tree implementation
 func NewTree() Tree {
 	t := new(stree)
@@ -143,10 +136,10 @@ func (t *stree) BuildTree() {
 	if len(t.base) == 0 {
 		panic("No intervals in stack to build tree. Push intervals first")
 	}
-	var endpoint []int
-	endpoint, t.min, t.max = Endpoints(t.base)
+	var endpoints []int
+	endpoints, t.min, t.max = Endpoints(t.base)
 	// Create tree nodes from interval endpoints
-	t.root = t.insertNodes(endpoint)
+	t.root = t.insertNodes(elementaryIntervals(endpoints))
 	for i := range t.base {
 		insertInterval(t.root, &t.base[i])
 	}
@@ -188,31 +181,40 @@ func Dedup(sl []int) []int {
 	return unique
 }
 
-// insertNodes builds tree structure from given endpoints
-func (t *stree) insertNodes(endpoint []int) *node {
+// elementaryIntervals creates a slice of elementary intervals
+// from a sorted slice of endpoints
+// Input: [p1, p2, ..., pn]
+// Output: [{p1 : p1}, {p1 : p2}, {p2 : p2},... , {pn : pn}]
+func elementaryIntervals(endpoints []int) []Segment {
+	if len(endpoints) == 1 {
+		return []Segment{Segment{endpoints[0], endpoints[0]}}
+	}
+
+	intervals := make([]Segment, len(endpoints)*2-1)
+	for i := 0; i < len(endpoints); i++ {
+		intervals[i*2] = Segment{endpoints[i], endpoints[i]}
+		if i < len(endpoints)-1 { // don't store {pn, pn+1}
+			intervals[i*2+1] = Segment{endpoints[i], endpoints[i+1]}
+		}
+	}
+	return intervals
+}
+
+// insertNodes builds the tree structure from the elementary intervals
+func (t *stree) insertNodes(leaves []Segment) *node {
 	var n *node
-	if len(endpoint) == 1 {
-		n = &node{segment: Segment{endpoint[0], endpoint[0]}}
+	if len(leaves) == 1 {
+		n = &node{segment: leaves[0]}
 		n.left = nil
 		n.right = nil
 	} else {
-		n = &node{segment: Segment{endpoint[0], endpoint[len(endpoint)-1]}}
-		center := len(endpoint) / 2
-		n.left = t.insertNodes(endpoint[:center])
-		n.right = t.insertNodes(endpoint[center:])
+		n = &node{segment: Segment{leaves[0].From, leaves[len(leaves)-1].To}}
+		center := len(leaves) / 2
+		n.left = t.insertNodes(leaves[:center])
+		n.right = t.insertNodes(leaves[center:])
 	}
-	return n
-}
 
-// CompareTo compares two Segments and returns: DISJOINT, SUBSET or INTERSECT_OR_SUPERSET
-func (s *Segment) CompareTo(other *Segment) int {
-	if other.From > s.To || other.To < s.From {
-		return DISJOINT
-	}
-	if other.From <= s.From && other.To >= s.To {
-		return SUBSET
-	}
-	return INTERSECT_OR_SUPERSET
+	return n
 }
 
 // Disjoint returns true if Segment does not overlap with interval
@@ -223,25 +225,31 @@ func (s *Segment) Disjoint(from, to int) bool {
 	return false
 }
 
+func (s *Segment) subsetOf(other *Segment) bool {
+	return other.From <= s.From && other.To >= s.To
+}
+
+func (s *Segment) intersectsWith(other *Segment) bool {
+	return other.From <= s.To && s.From <= other.To ||
+		s.From <= other.To && other.From <= s.To
+}
+
 // Inserts interval into given tree structure
 func insertInterval(node *node, intrvl *Interval) {
-	switch node.segment.CompareTo(&intrvl.Segment) {
-	case SUBSET:
+	if node.segment.subsetOf(&intrvl.Segment) {
+
 		// interval of node is a subset of the specified interval or equal
 		if node.overlap == nil {
 			node.overlap = make([]*Interval, 0, 10)
 		}
 		node.overlap = append(node.overlap, intrvl)
-	case INTERSECT_OR_SUPERSET:
-		// interval of node is a superset, have to look in both children
-		if node.left != nil {
+	} else {
+		if node.left != nil && node.left.segment.intersectsWith(&intrvl.Segment) {
 			insertInterval(node.left, intrvl)
 		}
-		if node.right != nil {
+		if node.right != nil && node.right.segment.intersectsWith(&intrvl.Segment) {
 			insertInterval(node.right, intrvl)
 		}
-	case DISJOINT:
-		// nothing to do
 	}
 }
 
