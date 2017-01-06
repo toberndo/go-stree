@@ -250,21 +250,32 @@ func (t *stree) Query(from, to int) []Interval {
 	if t.root == nil {
 		panic("Can't run query on empty tree. Call BuildTree() first")
 	}
-	result := make(map[int]Interval)
+	var result []Interval
 	querySingle(t.root, from, to, &result)
-	// transform map to slice
-	sl := make([]Interval, 0, len(result))
-	for _, intrvl := range result {
-		sl = append(sl, intrvl)
+	// on small result-set, we check for duplicates without allocation.
+	if len(result) < 2 || (len(result) == 2 && result[0] != result[1]) || (len(result) == 3 && result[0] != result[1] && result[0] != result[2] && result[1] != result[2]) {
+		return result
 	}
-	return sl
+	// on larger sets, use a map.
+	m := make(map[int]Interval)
+	for _, iv := range result {
+		m[iv.Id] = iv
+	}
+	if len(m) == len(result) {
+		return result
+	}
+	result = result[:0]
+	for _, iv := range m {
+		result = append(result, iv)
+	}
+	return result
 }
 
 // querySingle traverse tree in search of overlaps
-func querySingle(node *node, from, to int, result *map[int]Interval) {
+func querySingle(node *node, from, to int, result *[]Interval) {
 	if !node.segment.Disjoint(from, to) {
 		for _, pintrvl := range node.overlap {
-			(*result)[pintrvl.Id] = *pintrvl
+			*result = append(*result, *pintrvl)
 		}
 		if node.right != nil {
 			querySingle(node.right, from, to, result)
